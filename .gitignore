@@ -32,7 +32,10 @@
 *.app
 
 # Miscellaneous
-/.vs
-/Debug
-/Release
+.vs/
+Debug/
+Release/
+v16/
+*.vcxproj.user
+
 

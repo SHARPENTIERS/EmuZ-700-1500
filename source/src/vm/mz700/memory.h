@@ -24,6 +24,9 @@ class MEMORY : public DEVICE
 {
 private:
 	DEVICE *d_cpu, *d_pit, *d_pio;
+#if defined(USE_ROMDISK)
+	DEVICE* d_romdisk[2];
+#endif
 #if defined(_MZ800)
 	DEVICE *d_pio_int;
 #endif
@@ -66,8 +69,6 @@ private:
 	uint8_t pcg_bank;
 #endif
 #if defined(USE_ROMDISK)
-	uint8_t ipl_flash[128*0x1000];	// FLASH-like ROM/DISK 512KB
-	uint8_t ipl_nvram[ 64*0x1000];	// nvRAM-like ROM/DISK 256KB
 	int8_t ipl_storage;             // 0: Normal IPL 4KB, 1: FLASH IPL+DISK 512KB, 2: nvRAM IPL+DISK 256KB
 	int8_t ipl_page;
 #endif
@@ -158,6 +159,14 @@ public:
 	void set_context_pio_int(DEVICE* device)
 	{
 		d_pio_int = device;
+	}
+#endif
+#if defined(USE_ROMDISK)
+	void set_context_romdisk(int i, DEVICE* device)
+	{
+		if (unsigned(i) < 2) {
+			d_romdisk[i] = device;
+		}
 	}
 #endif
 	void draw_screen();

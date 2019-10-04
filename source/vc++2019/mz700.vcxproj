@@ -303,6 +303,8 @@
     <ClCompile Include="..\src\fileio.cpp" />
     <ClCompile Include="..\src\debugger.cpp" />
     <ClCompile Include="..\src\emu.cpp" />
+    <ClCompile Include="..\src\vm\mz700\ds1249y.cpp" />
+    <ClCompile Include="..\src\vm\mz700\sst39sf040.cpp" />
     <ClCompile Include="..\src\win32\osd.cpp" />
     <ClCompile Include="..\src\win32\osd_console.cpp" />
     <ClCompile Include="..\src\win32\osd_input.cpp" />
@@ -332,6 +334,8 @@
     <ClInclude Include="..\src\fifo.h" />
     <ClInclude Include="..\src\fileio.h" />
     <ClInclude Include="..\src\emu.h" />
+    <ClInclude Include="..\src\vm\mz700\ds1249y.h" />
+    <ClInclude Include="..\src\vm\mz700\sst39sf040.h" />
     <ClInclude Include="..\src\win32\osd.h" />
     <ClInclude Include="..\src\vm\and.h" />
     <ClInclude Include="..\src\vm\datarec.h" />

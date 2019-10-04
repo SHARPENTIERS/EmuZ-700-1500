@@ -34,6 +34,11 @@
 #include "memory.h"
 #include "ramfile.h"
 
+#if defined(USE_ROMDISK)
+#include "ds1249y.h"
+#include "sst39sf040.h"
+#endif
+
 #if defined(_MZ800) || defined(_MZ1500)
 #include "../disk.h"
 #include "../mb8877.h"
@@ -83,7 +88,11 @@ VM::VM(EMU* parent_emu) : VM_TEMPLATE(parent_emu)
 	keyboard = new KEYBOARD(this, emu);
 	memory = new MEMORY(this, emu);
 	ramfile = new RAMFILE(this, emu);
-	
+#if defined(USE_ROMDISK)
+	ds1249y = new DS1249Y(this, emu);
+	sst39sf040 = new SST39SF040(this, emu);
+#endif
+
 #if defined(_MZ800) || defined(_MZ1500)
 	and_snd = new AND(this, emu);
 	and_snd->set_device_name(_T("AND Gate (Sound)"));
@@ -148,7 +157,13 @@ VM::VM(EMU* parent_emu) : VM_TEMPLATE(parent_emu)
 	// memory mapped I/O
 	memory->set_context_pio(pio);
 	memory->set_context_pit(pit);
-	
+
+#if defined(USE_ROMDISK)
+	// rom disks
+	memory->set_context_romdisk(0, sst39sf040);
+	memory->set_context_romdisk(1, ds1249y);
+#endif
+
 #if defined(_MZ1500)
 	// psg mixer
 	psg->set_context_psg_l(psg_l);
@@ -312,7 +327,7 @@ VM::VM(EMU* parent_emu) : VM_TEMPLATE(parent_emu)
 	io->set_iomap_range_rw(0xea, 0xeb, ramfile);
 	// cmos
 //	io->set_iomap_range_rw(0xf8, 0xfa, cmos);
-	
+
 #if defined(_MZ800)
 	// 8255/8253
 	io->set_iomap_range_rw(0xd0, 0xd3, pio);
@@ -344,8 +359,11 @@ VM::VM(EMU* parent_emu) : VM_TEMPLATE(parent_emu)
 #elif defined(_MZ1500)
 	// palette
 	io->set_iomap_range_w(0xf0, 0xf1, memory);
+#elif defined(_MZ1500)
+	// ds1249y
+	io->set_iomap_single_r(0xff, ds1249y);
 #endif
-	
+
 #if defined(_MZ800)
 	// joystick
 //	io->set_iomap_range_r(0xf0, 0xf1, joystick);

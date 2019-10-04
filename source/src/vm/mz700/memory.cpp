@@ -101,25 +101,8 @@ void MEMORY::initialize()
 	}
 
 #if defined(USE_ROMDISK)
-	// init flash ROM/DISK 512KB
-	memset(ipl_flash, 0xff, sizeof(ipl_flash));
-	// init nvram ROM/DISK 256KB
-	memset(ipl_nvram, 0xff, sizeof(ipl_nvram));
-
-	// load flash ROM/DISK image
-	if (fio->Fopen(create_local_path(_T("SST39SF040.BIN")), FILEIO_READ_BINARY)) {
-		fio->Fread(ipl_flash, sizeof(ipl_flash), 1);
-		fio->Fclose();
-	}
-
-	// load flash ROM/DISK image
-	if (fio->Fopen(create_local_path(_T("DS1249Y.BIN")), FILEIO_READ_BINARY)) {
-		fio->Fread(ipl_nvram, sizeof(ipl_nvram), 1);
-		fio->Fclose();
-	}
-
-	ipl_storage = 0;
 	ipl_page = 0;
+	update_config();
 #endif
 
 	delete fio;
@@ -151,21 +134,6 @@ void MEMORY::initialize()
 
 void MEMORY::release()
 {
-#if defined(USE_ROMDISK)
-	FILEIO* fio = new FILEIO();
-
-	if (fio->Fopen(create_local_path(_T("SST39SF040.BIN")), FILEIO_WRITE_BINARY)) {
-		fio->Fwrite(ipl_flash, sizeof(ipl_flash), 1);
-		fio->Fclose();
-	}
-
-	if (fio->Fopen(create_local_path(_T("DS1249Y.BIN")), FILEIO_WRITE_BINARY)) {
-		fio->Fwrite(ipl_nvram, sizeof(ipl_nvram), 1);
-		fio->Fclose();
-	}
-
-	delete fio;
-#endif
 }
 
 void MEMORY::reset()
@@ -229,7 +197,7 @@ void MEMORY::reset()
 
 #if defined(USE_ROMDISK)
 	// reset ROM/DISK page selector
-	ipl_page = 0;
+	ipl_storage = uint8_t(config.ipl_storage);
 #endif
 
 	// motor is always rotating...
@@ -577,19 +545,16 @@ void MEMORY::write_data8w(uint32_t addr, uint32_t data, int* wait)
 #if defined(USE_ROMDISK)
 		switch(ipl_storage) {
 		case 1: // flash 512KB
-			// TODO: complex programming sequence.
-			ipl_flash[(ipl_page & 127) * 0x1000 + (addr & 0x0fff)] = uint8_t(data);
-			return;
 		case 2: // nvram 256KB
-			ipl_nvram[(ipl_page & 63) * 0x1000 + (addr & 0x0fff)] = uint8_t(data);
+			d_romdisk[ipl_storage-1]->write_data8((ipl_page & 255) * 0x1000 + addr, data);
 			return;
-#endif
 		default:
-			write_data8(addr, data);
-			return;
+			break;
 		}
+#endif
+	} else {
+		*wait = 0;
 	}
-	*wait = 0;
 	write_data8(addr, data);
 }
 
@@ -600,15 +565,15 @@ uint32_t MEMORY::read_data8w(uint32_t addr, int* wait)
 #if defined(USE_ROMDISK)
 		switch (ipl_storage) {
 		case 1: // flash 512KB
-			return uint32_t(ipl_flash[(ipl_page & 127) * 0x1000 + (addr & 0x0fff)]);
 		case 2: // nvram 256KB
-			return uint32_t(ipl_nvram[(ipl_page & 63) * 0x1000 + (addr & 0x0fff)]);
-#endif
+			return d_romdisk[ipl_storage-1]->read_data8((ipl_page & 255) * 0x1000 + addr);
 		default:
-			return read_data8(addr);
+			break;
 		}
+#endif
+	} else {
+		*wait = 0;
 	}
-	*wait = 0;
 	return read_data8(addr);
 }
 
@@ -1235,8 +1200,6 @@ bool MEMORY::process_state(FILEIO* state_fio, bool loading)
 	state_fio->StateArray(palette_pc, sizeof(palette_pc), 1);
 
 #if defined(USE_ROMDISK)
-	state_fio->StateArray(ipl_flash, sizeof(ipl_flash), 1);
-	state_fio->StateArray(ipl_nvram, sizeof(ipl_nvram), 1);
 	state_fio->StateValue(ipl_page);
 	state_fio->StateValue(ipl_storage);
 #endif

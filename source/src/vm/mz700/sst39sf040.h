@@ -31,13 +31,13 @@ private:
 		WC6_555510  // Chip Erase Write Cycle 6
 	};
 
+	FILEIO* log;
 	uint8_t *data_buffer;
 	WriteCycle wc;
 	uint32_t busy;
 	bool modified;
 	bool software_id_entry;
-	uint8_t byte;
-
+	FILEIO* logmem;
 public:
 	SST39SF040(VM_TEMPLATE* parent_vm, EMU* parent_emu) : DEVICE(parent_vm, parent_emu)
 	{

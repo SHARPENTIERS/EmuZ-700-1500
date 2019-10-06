@@ -798,8 +798,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			config.sound_play_tape = !config.sound_play_tape;
 			break;
 #endif
-#ifdef USE_TAPE
-		case ID_ROM_IPLROM: case ID_ROM_IPLFLASH: case ID_ROM_IPLNVRAM:
+#ifdef USE_ROMDISK
+		case ID_ROM_IPLROM: case ID_ROM_IPLFLASH:
 			config.ipl_storage = LOWORD(wParam) - ID_ROM_IPLROM;
 			if (emu) {
 				emu->update_config();
@@ -2001,8 +2001,8 @@ void update_host_capture_menu(HMENU hMenu)
 
 void update_romdisk_menu(HMENU hMenu)
 {
-	if (config.ipl_storage >= 0 && config.ipl_storage < 3) {
-		CheckMenuRadioItem(hMenu, ID_ROM_IPLROM, ID_ROM_IPLNVRAM, ID_ROM_IPLROM + config.ipl_storage, MF_BYCOMMAND);
+	if (config.ipl_storage >= 0 && config.ipl_storage < 2) {
+		CheckMenuRadioItem(hMenu, ID_ROM_IPLROM, ID_ROM_IPLFLASH, ID_ROM_IPLROM + config.ipl_storage, MF_BYCOMMAND);
 	}
 }
 #endif
@@ -2123,7 +2123,7 @@ void update_menu(HWND hWnd, HMENU hMenu)
 #endif
 #endif
 #ifdef USE_TAPE
-	} else if (id >= ID_ROM_IPLROM && id <= ID_ROM_IPLNVRAM) {
+	} else if (id >= ID_ROM_IPLROM && id <= ID_ROM_IPLFLASH) {
 		update_romdisk_menu(hMenu);
 #endif
 #ifdef USE_COMPACT_DISC

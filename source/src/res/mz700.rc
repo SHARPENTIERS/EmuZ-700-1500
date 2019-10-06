@@ -1,5 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
+#pragma code_page(65001)
+
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -17,7 +19,6 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
-#pragma code_page(932)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -49,11 +50,10 @@ END
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Anglais (États-Unis) resources
+// Anglais (Ã‰tats-Unis) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -216,9 +216,8 @@ BEGIN
     END
     POPUP "ROM/Disk"
     BEGIN
-        MENUITEM "ROM/No disk 4KB",             ID_ROM_IPLROM
-        MENUITEM "Flash ROM/Disk 512KB",        ID_ROM_IPLFLASH
-        MENUITEM "nvRAM ROM/Disk 256KB",        ID_ROM_IPLNVRAM
+        MENUITEM "Original ROM/No disk (4KB)",  ID_ROM_IPLROM
+        MENUITEM "SST39SF040 ROM/Disk (512KB)", ID_ROM_IPLFLASH
     END
 END
 
@@ -271,7 +270,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Anglais (États-Unis) resources
+#endif    // Anglais (Ã‰tats-Unis) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

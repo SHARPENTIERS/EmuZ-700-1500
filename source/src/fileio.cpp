@@ -889,6 +889,13 @@ int FILEIO::Ftprintf(const _TCHAR* format, ...)
 	return 0;
 }
 
+void FILEIO::Fflush()
+{
+	if (fp != NULL) {
+		fflush(fp);
+	}
+}
+
 size_t FILEIO::Fread(void* buffer, size_t size, size_t count)
 {
 #ifdef USE_ZLIB

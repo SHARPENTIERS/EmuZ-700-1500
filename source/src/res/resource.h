@@ -562,7 +562,6 @@
 #define ID_OPTION_ROM44060              44060
 #define ID_ROM_IPLROM                   44061
 #define ID_ROM_IPLFLASH                 44062
-#define ID_ROM_IPLNVRAM                 44063
 #define ID_HD1_MENU_START               45001
 #define ID_OPEN_HD1                     45001
 #define ID_CLOSE_HD1                    45002

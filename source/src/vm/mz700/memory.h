@@ -25,7 +25,7 @@ class MEMORY : public DEVICE
 private:
 	DEVICE *d_cpu, *d_pit, *d_pio;
 #if defined(USE_ROMDISK)
-	DEVICE* d_romdisk[2];
+	DEVICE* d_romdisk[1];
 #endif
 #if defined(_MZ800)
 	DEVICE *d_pio_int;
@@ -69,7 +69,7 @@ private:
 	uint8_t pcg_bank;
 #endif
 #if defined(USE_ROMDISK)
-	int8_t ipl_storage;             // 0: Normal IPL 4KB, 1: FLASH IPL+DISK 512KB, 2: nvRAM IPL+DISK 256KB
+	int8_t ipl_storage;             // 0: Normal IPL 4KB, 1: FLASH IPL+DISK 512KB
 	int8_t ipl_page;
 #endif
 	void update_map_low();

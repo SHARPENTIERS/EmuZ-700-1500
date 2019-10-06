@@ -35,7 +35,6 @@
 #include "ramfile.h"
 
 #if defined(USE_ROMDISK)
-#include "ds1249y.h"
 #include "sst39sf040.h"
 #endif
 
@@ -89,7 +88,6 @@ VM::VM(EMU* parent_emu) : VM_TEMPLATE(parent_emu)
 	memory = new MEMORY(this, emu);
 	ramfile = new RAMFILE(this, emu);
 #if defined(USE_ROMDISK)
-	ds1249y = new DS1249Y(this, emu);
 	sst39sf040 = new SST39SF040(this, emu);
 #endif
 
@@ -161,7 +159,6 @@ VM::VM(EMU* parent_emu) : VM_TEMPLATE(parent_emu)
 #if defined(USE_ROMDISK)
 	// rom disks
 	memory->set_context_romdisk(0, sst39sf040);
-	memory->set_context_romdisk(1, ds1249y);
 #endif
 
 #if defined(_MZ1500)

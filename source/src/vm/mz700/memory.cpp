@@ -545,7 +545,6 @@ void MEMORY::write_data8w(uint32_t addr, uint32_t data, int* wait)
 #if defined(USE_ROMDISK)
 		switch(ipl_storage) {
 		case 1: // flash 512KB
-		case 2: // nvram 256KB
 			d_romdisk[ipl_storage-1]->write_data8((ipl_page & 255) * 0x1000 + addr, data);
 			return;
 		default:
@@ -565,7 +564,6 @@ uint32_t MEMORY::read_data8w(uint32_t addr, int* wait)
 #if defined(USE_ROMDISK)
 		switch (ipl_storage) {
 		case 1: // flash 512KB
-		case 2: // nvram 256KB
 			return d_romdisk[ipl_storage-1]->read_data8((ipl_page & 255) * 0x1000 + addr);
 		default:
 			break;

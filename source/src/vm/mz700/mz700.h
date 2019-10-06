@@ -193,7 +193,6 @@ class KEYBOARD;
 class MEMORY;
 class RAMFILE;
 #if defined(USE_ROMDISK)
-class DS1249Y;
 class SST39SF040;
 #endif
 #if defined(_MZ800) || defined(_MZ1500)
@@ -233,7 +232,6 @@ protected:
 	RAMFILE* ramfile;
 
 #if defined(USE_ROMDISK)
-	DS1249Y* ds1249y;
 	SST39SF040* sst39sf040;
 #endif
 

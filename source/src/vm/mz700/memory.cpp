@@ -238,7 +238,7 @@ void MEMORY::event_vline(int v, int clock)
 {
 	// vblank / vsync
 	set_vblank(v >= 200);
-#if defined(_MZ800)
+#if defined(_MZ800) || defined(_PAL)
 	vsync = (v >= 240 && v <= 242);
 #else
 	vsync = (v >= 221 && v <= 223);
@@ -246,10 +246,12 @@ void MEMORY::event_vline(int v, int clock)
 	
 	// hblank / hsync
 	set_hblank(false);
-#if defined(_MZ800)
+#if defined(_MZ800) || defined(_PAL)
 	register_event_by_clock(this, EVENT_HBLANK, 128, false, NULL);	// PAL 50Hz
+#if defined(_MZ800)
 	register_event_by_clock(this, EVENT_HSYNC_S, 161, false, NULL);
 	register_event_by_clock(this, EVENT_HSYNC_E, 177, false, NULL);
+#endif
 #else
 	register_event_by_clock(this, EVENT_HBLANK, 165, false, NULL);	// NTSC 60Hz
 //	register_event_by_clock(this, EVENT_HSYNC_S, 180, false, NULL);

@@ -24,7 +24,7 @@
 #endif
 
 // device informations for virtual machine
-#if defined(_MZ800)
+#if defined(_MZ800) || defined(_PAL)
 #define FRAMES_PER_SEC		(3546895.0 / 228.0 / 312.0)
 #define LINES_PER_FRAME		312
 #define CPU_CLOCKS		3546895

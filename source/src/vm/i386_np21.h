@@ -1,21 +1,39 @@
 /*
 	Skelton for retropc emulator
 
-	Origin : MAME i386 core
+	Origin : np21/w i386c core
 	Author : Takeda.Toshiya
-	Date   : 2009.06.08-
+	Date   : 2020.01.25-
 
-	[ i386/i486/Pentium/MediaGX ]
+	[ i386/i486/Pentium ]
 */
 
-#ifndef _I386_H_
-#define _I386_H_
+#ifndef _I386_NP21_H_
+#define _I386_NP21_H_
 
 #include "vm.h"
 #include "../emu.h"
 #include "device.h"
 
 #define SIG_I386_A20	1
+
+enum {
+	DEFAULT = -1,
+	INTEL_80386 = 0,
+	INTEL_I486SX,
+	INTEL_I486DX,
+	INTEL_PENTIUM,
+	INTEL_MMX_PENTIUM,
+	INTEL_PENTIUM_PRO,
+	INTEL_PENTIUM_II,
+	INTEL_PENTIUM_III,
+	INTEL_PENTIUM_M,
+	INTEL_PENTIUM_4,
+	AMD_K6_2,
+	AMD_K6_III,
+	AMD_K7_ATHLON,
+	AMD_K7_ATHLON_XP,
+};
 
 #ifdef USE_DEBUGGER
 class DEBUGGER;
@@ -24,46 +42,29 @@ class DEBUGGER;
 class I386 : public DEVICE
 {
 private:
-	DEVICE *d_mem, *d_io, *d_pic;
-#ifdef I86_PSEUDO_BIOS
-	DEVICE *d_bios;
-#endif
-#ifdef SINGLE_MODE_DMA
-	DEVICE *d_dma;
-#endif
+	DEVICE *device_pic;
 #ifdef USE_DEBUGGER
-	DEBUGGER *d_debugger;
+//	DEBUGGER *device_debugger;
+	DEVICE *device_mem_stored;
+	DEVICE *device_io_stored;
+	uint64_t total_cycles;
+	uint64_t prev_total_cycles;
 #endif
-	void *opaque;
+	int remained_cycles, extra_cycles;
+	bool busreq;
+	bool nmi_pending, irq_pending;
+	uint32_t PREV_CS_BASE;
+	int run_one_opecode();
+	uint32_t convert_address(uint32_t cs, uint32_t eip);
 	
 public:
 	I386(VM_TEMPLATE* parent_vm, EMU* parent_emu) : DEVICE(parent_vm, parent_emu)
 	{
-#ifdef I86_PSEUDO_BIOS
-		d_bios = NULL;
+#ifdef USE_DEBUGGER
+		total_cycles = prev_total_cycles = 0;
 #endif
-#ifdef SINGLE_MODE_DMA
-		d_dma = NULL;
-#endif
-#if defined(HAS_I386)
-		set_device_name(_T("80386 CPU"));
-#elif defined(HAS_I486)
-		set_device_name(_T("80486 CPU"));
-#elif defined(HAS_PENTIUM)
-		set_device_name(_T("Pentium CPU"));
-#elif defined(HAS_MEDIAGX)
-		set_device_name(_T("Media GX CPU"));
-#elif defined(HAS_PENTIUM_PRO)
-		set_device_name(_T("Pentium Pro CPU"));
-#elif defined(HAS_PENTIUM_MMX)
-		set_device_name(_T("Pentium MMX CPU"));
-#elif defined(HAS_PENTIUM2)
-		set_device_name(_T("Pentium2 CPU"));
-#elif defined(HAS_PENTIUM3)
-		set_device_name(_T("Pentium3 CPU"));
-#elif defined(HAS_PENTIUM4)
-		set_device_name(_T("Pentium4 CPU"));
-#endif
+		busreq = false;
+		device_model = DEFAULT;
 	}
 	~I386() {}
 	
@@ -87,10 +88,10 @@ public:
 	{
 		return true;
 	}
-	void *get_debugger()
-	{
-		return d_debugger;
-	}
+	void *get_debugger();
+//	{
+//		return device_debugger;
+//	}
 	uint32_t get_debug_prog_addr_mask()
 	{
 		return 0xffffffff;
@@ -119,40 +120,41 @@ public:
 	bool process_state(FILEIO* state_fio, bool loading);
 	
 	// unique function
-	void set_context_mem(DEVICE* device)
-	{
-		d_mem = device;
-	}
-	void set_context_io(DEVICE* device)
-	{
-		d_io = device;
-	}
+	void set_context_mem(DEVICE* device);
+//	{
+//		device_mem = device;
+//	}
+	void set_context_io(DEVICE* device);
+//	{
+//		device_io = device;
+//	}
 	void set_context_intr(DEVICE* device)
 	{
-		d_pic = device;
+		device_pic = device;
 	}
 #ifdef I86_PSEUDO_BIOS
-	void set_context_bios(DEVICE* device)
-	{
-		d_bios = device;
-	}
+	void set_context_bios(DEVICE* device);
+//	{
+//		device_bios = device;
+//	}
 #endif
 #ifdef SINGLE_MODE_DMA
-	void set_context_dma(DEVICE* device)
-	{
-		d_dma = device;
-	}
+	void set_context_dma(DEVICE* device);
+//	{
+//		device_dma = device;
+//	}
 #endif
 #ifdef USE_DEBUGGER
-	void set_context_debugger(DEBUGGER* device)
-	{
-		d_debugger = device;
-	}
+	void set_context_debugger(DEBUGGER* device);
+//	{
+//		device_debugger = device;
+//	}
 #endif
 	void set_address_mask(uint32_t mask);
 	uint32_t get_address_mask();
 	void set_shutdown_flag(int shutdown);
 	int get_shutdown_flag();
+	int device_model;
 };
 
 #endif

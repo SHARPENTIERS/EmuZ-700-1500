@@ -805,14 +805,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			config.sound_play_tape = !config.sound_play_tape;
 			break;
 #endif
-#ifdef USE_ROMDISK
-		case ID_ROM_IPLROM: case ID_ROM_IPLFLASH:
-			config.ipl_storage = LOWORD(wParam) - ID_ROM_IPLROM;
-			if (emu) {
-				emu->update_config();
-			}
-			break;
-#endif
 #ifdef USE_MONITOR_TYPE
 		case ID_VM_MONITOR_TYPE0: case ID_VM_MONITOR_TYPE1: case ID_VM_MONITOR_TYPE2: case ID_VM_MONITOR_TYPE3:
 		case ID_VM_MONITOR_TYPE4: case ID_VM_MONITOR_TYPE5: case ID_VM_MONITOR_TYPE6: case ID_VM_MONITOR_TYPE7:
@@ -2019,16 +2011,6 @@ void update_host_capture_menu(HMENU hMenu)
 }
 #endif
 
-#ifdef USE_ROMDISK
-
-void update_romdisk_menu(HMENU hMenu)
-{
-	if (config.ipl_storage >= 0 && config.ipl_storage < 2) {
-		CheckMenuRadioItem(hMenu, ID_ROM_IPLROM, ID_ROM_IPLFLASH, ID_ROM_IPLROM + config.ipl_storage, MF_BYCOMMAND);
-	}
-}
-#endif
-
 void update_toplevel_menu(HWND hWnd, HMENU hMenu)
 {
 	int count = GetMenuItemCount(hMenu);
@@ -2244,11 +2226,6 @@ void update_popup_menu(HWND hWnd, HMENU hMenu)
 		update_tape_menu(hMenu, 1, ID_RECENT_TAPE2, ID_CLOSE_TAPE2, ID_PLAY_BUTTON2, ID_STOP_BUTTON2, ID_FAST_FORWARD2, ID_FAST_REWIND2, ID_APSS_FORWARD2, ID_APSS_REWIND2, ID_USE_WAVE_SHAPER2, ID_DIRECT_LOAD_MZT2, ID_TAPE_BAUD_LOW2, ID_TAPE_BAUD_HIGH2);
 	}
 #endif
-#endif
-#ifdef USE_TAPE
-	else if (id >= ID_ROM_IPLROM && id <= ID_ROM_IPLFLASH) {
-		update_romdisk_menu(hMenu);
-	}
 #endif
 #ifdef USE_COMPACT_DISC
 #if USE_COMPACT_DISC >= 1
@@ -3135,7 +3112,6 @@ void open_any_file(const _TCHAR* path)
 	   check_file_extension(path, _T(".t88")) || 
 	   check_file_extension(path, _T(".mzt")) || 
 	   check_file_extension(path, _T(".mzf")) || 
-	   check_file_extension(path, _T(".mz7")) ||	   
 	   check_file_extension(path, _T(".m12")) || 
 	   check_file_extension(path, _T(".mti")) || 
 	   check_file_extension(path, _T(".mtw")) || 

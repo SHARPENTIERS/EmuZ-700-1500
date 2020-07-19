@@ -1,6 +1,5 @@
 /*
 	SHARP MZ-700 Emulator 'EmuZ-700'
-	SHARP MZ-800 Emulator 'EmuZ-800'
 	SHARP MZ-1500 Emulator 'EmuZ-1500'
 
 	Author : Takeda.Toshiya

@@ -57,8 +57,12 @@ private:
 	uint64_t prev_total_icount;
 #endif
 	int icount;
+	int first_icount;
 	int extra_icount;
 	int busreq_icount;
+	const uint8_t (*mc_tstates)[6];
+	int mc_index;
+	int memory_icount;
 	uint16_t prevpc;
 	pair32_t pc, sp, af, bc, de, hl, ix, iy, wz;
 	pair32_t af2, bc2, de2, hl2;
@@ -146,6 +150,14 @@ public:
 	int get_extra_clock()
 	{
 		return extra_icount;
+	}
+	int get_insn_clock()
+	{
+		return first_icount - icount;
+	}
+	int get_tstates()
+	{
+		return (mc_index < 0) ? int() : int((*mc_tstates)[mc_index]);
 	}
 	uint32_t get_pc()
 	{

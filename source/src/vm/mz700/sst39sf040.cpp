@@ -41,7 +41,6 @@ void SST39SF040::initialize()
 
 void SST39SF040::release()
 {
-	// save ds1249y image
 	if(modified) {
 		FILEIO* fio = new FILEIO();
 		if(fio->Fopen(create_local_path(_T("SST39SF040.BIN")), FILEIO_WRITE_BINARY)) {

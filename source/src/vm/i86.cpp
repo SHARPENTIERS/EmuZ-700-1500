@@ -5,13 +5,14 @@
 	Author : Takeda.Toshiya
 	Date   : 2012.10.18-
 
-	[ 80286 ]
+	[ 8086/8088/80186/V30 ]
 */
 
-#include "i286.h"
+#include "i86.h"
 #ifdef USE_DEBUGGER
 #include "debugger.h"
 #include "i386_dasm.h"
+#include "v30_dasm.h"
 #endif
 
 /* ----------------------------------------------------------------------------
@@ -98,13 +99,29 @@ const endianness_t ENDIANNESS_NATIVE = ENDIANNESS_BIG;
 // offsets and addresses are 32-bit (for now...)
 typedef UINT32	offs_t;
 
-#define cpu_state i80286_state
-#include "mame/emu/cpu/i86/i286.c"
+#define cpu_state i8086_state
+#include "mame/emu/cpu/i86/i86.c"
 
-void I286::initialize()
+void I86::initialize()
 {
-	opaque = CPU_INIT_CALL(i80286);
-	
+	switch(device_model) {
+	case INTEL_8086:
+		opaque = CPU_INIT_CALL(i8086);
+		set_device_name(_T("8086 CPU"));
+		break;
+	case INTEL_8088:
+		opaque = CPU_INIT_CALL(i8088);
+		set_device_name(_T("8088 CPU"));
+		break;
+	case INTEL_80186:
+		opaque = CPU_INIT_CALL(i80186);
+		set_device_name(_T("80186 CPU"));
+		break;
+	case NEC_V30:
+		opaque = CPU_INIT_CALL(v30);
+		set_device_name(_T("V30 CPU"));
+		break;
+	}
 	cpu_state *cpustate = (cpu_state *)opaque;
 	cpustate->pic = d_pic;
 	cpustate->program = d_mem;
@@ -126,18 +143,30 @@ void I286::initialize()
 #endif
 }
 
-void I286::release()
+void I86::release()
 {
 	free(opaque);
 }
 
-void I286::reset()
+void I86::reset()
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	int busreq = cpustate->busreq;
 	
-	CPU_RESET_CALL(i80286);
-	
+	switch(device_model) {
+	case INTEL_8086:
+		CPU_RESET_CALL(i8086);
+		break;
+	case INTEL_8088:
+		CPU_RESET_CALL(i8088);
+		break;
+	case INTEL_80186:
+		CPU_RESET_CALL(i80186);
+		break;
+	case NEC_V30:
+		CPU_RESET_CALL(v30);
+		break;
+	}
 	cpustate->pic = d_pic;
 	cpustate->program = d_mem;
 	cpustate->io = d_io;
@@ -156,13 +185,24 @@ void I286::reset()
 	cpustate->busreq = busreq;
 }
 
-int I286::run(int icount)
+int I86::run(int icount)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
-	return CPU_EXECUTE_CALL(i80286);
+	
+	switch(device_model) {
+	case INTEL_8086:
+		return CPU_EXECUTE_CALL(i8086);
+	case INTEL_8088:
+		return CPU_EXECUTE_CALL(i8088);
+	case INTEL_80186:
+		return CPU_EXECUTE_CALL(i80186);
+	case NEC_V30:
+		return CPU_EXECUTE_CALL(v30);
+	}
+	return 0;
 }
 
-void I286::write_signal(int id, uint32_t data, uint32_t mask)
+void I86::write_signal(int id, uint32_t data, uint32_t mask)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	
@@ -174,91 +214,89 @@ void I286::write_signal(int id, uint32_t data, uint32_t mask)
 		cpustate->busreq = (data & mask) ? 1 : 0;
 	} else if(id == SIG_I86_TEST) {
 		cpustate->test_state = (data & mask) ? 1 : 0;
-	} else if(id == SIG_I286_A20) {
-		i80286_set_a20_line(cpustate, data & mask);
 	}
 }
 
-void I286::set_intr_line(bool line, bool pending, uint32_t bit)
+void I86::set_intr_line(bool line, bool pending, uint32_t bit)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	set_irq_line(cpustate, INPUT_LINE_IRQ, line ? HOLD_LINE : CLEAR_LINE);
 }
 
-void I286::set_extra_clock(int icount)
+void I86::set_extra_clock(int icount)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	cpustate->extra_cycles += icount;
 }
 
-int I286::get_extra_clock()
+int I86::get_extra_clock()
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	return cpustate->extra_cycles;
 }
 
-uint32_t I286::get_pc()
+uint32_t I86::get_pc()
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	return cpustate->prevpc;
 }
 
-uint32_t I286::get_next_pc()
+uint32_t I86::get_next_pc()
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	return cpustate->pc;
 }
 
 #ifdef USE_DEBUGGER
-void I286::write_debug_data8(uint32_t addr, uint32_t data)
+void I86::write_debug_data8(uint32_t addr, uint32_t data)
 {
 	int wait;
 	d_mem->write_data8w(addr, data, &wait);
 }
 
-uint32_t I286::read_debug_data8(uint32_t addr)
+uint32_t I86::read_debug_data8(uint32_t addr)
 {
 	int wait;
 	return d_mem->read_data8w(addr, &wait);
 }
 
-void I286::write_debug_data16(uint32_t addr, uint32_t data)
+void I86::write_debug_data16(uint32_t addr, uint32_t data)
 {
 	int wait;
 	d_mem->write_data16w(addr, data, &wait);
 }
 
-uint32_t I286::read_debug_data16(uint32_t addr)
+uint32_t I86::read_debug_data16(uint32_t addr)
 {
 	int wait;
 	return d_mem->read_data16w(addr, &wait);
 }
 
-void I286::write_debug_io8(uint32_t addr, uint32_t data)
+void I86::write_debug_io8(uint32_t addr, uint32_t data)
 {
 	int wait;
 	d_io->write_io8w(addr, data, &wait);
 }
 
-uint32_t I286::read_debug_io8(uint32_t addr)
+uint32_t I86::read_debug_io8(uint32_t addr)
 {
 	int wait;
 	return d_io->read_io8w(addr, &wait);
 }
 
-void I286::write_debug_io16(uint32_t addr, uint32_t data)
+void I86::write_debug_io16(uint32_t addr, uint32_t data)
 {
 	int wait;
 	d_io->write_io16w(addr, data, &wait);
 }
 
-uint32_t I286::read_debug_io16(uint32_t addr)
+uint32_t I86::read_debug_io16(uint32_t addr)
 {
 	int wait;
 	return d_io->read_io16w(addr, &wait);
 }
 
-bool I286::write_debug_reg(const _TCHAR *reg, uint32_t data)
+bool I86::write_debug_reg(const _TCHAR *reg, uint32_t data)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	if(_tcsicmp(reg, _T("IP")) == 0) {
@@ -302,7 +340,7 @@ bool I286::write_debug_reg(const _TCHAR *reg, uint32_t data)
 	return true;
 }
 
-uint32_t I286::read_debug_reg(const _TCHAR *reg)
+uint32_t I86::read_debug_reg(const _TCHAR *reg)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	if(_tcsicmp(reg, _T("IP")) == 0) {
@@ -343,7 +381,7 @@ uint32_t I286::read_debug_reg(const _TCHAR *reg)
 	return 0;
 }
 
-bool I286::get_debug_regs_info(_TCHAR *buffer, size_t buffer_len)
+bool I86::get_debug_regs_info(_TCHAR *buffer, size_t buffer_len)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	my_stprintf_s(buffer, buffer_len,
@@ -360,7 +398,7 @@ bool I286::get_debug_regs_info(_TCHAR *buffer, size_t buffer_len)
 	return true;
 }
 
-int I286::debug_dasm(uint32_t pc, _TCHAR *buffer, size_t buffer_len)
+int I86::debug_dasm(uint32_t pc, _TCHAR *buffer, size_t buffer_len)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	uint32_t eip = pc - cpustate->base[CS];
@@ -370,37 +408,18 @@ int I286::debug_dasm(uint32_t pc, _TCHAR *buffer, size_t buffer_len)
 		int wait;
 		oprom[i] = d_mem->read_data8w((pc + i) & AMASK, &wait);
 	}
-	return i386_dasm(oprom, eip, false, buffer, buffer_len);
+	switch(device_model) {
+	case NEC_V30:
+		return v30_dasm(cpustate->debugger, oprom, eip, (cpustate->MF == 0), buffer, buffer_len);
+	default:
+		return i386_dasm(oprom, eip, false, buffer, buffer_len);
+	}
 }
 #endif
 
-void I286::set_address_mask(uint32_t mask)
-{
-	cpu_state *cpustate = (cpu_state *)opaque;
-	cpustate->amask = mask;
-}
+#define STATE_VERSION	1
 
-uint32_t I286::get_address_mask()
-{
-	cpu_state *cpustate = (cpu_state *)opaque;
-	return cpustate->amask;
-}
-
-void I286::set_shutdown_flag(int shutdown)
-{
-	cpu_state *cpustate = (cpu_state *)opaque;
-	cpustate->shutdown = shutdown;
-}
-
-int I286::get_shutdown_flag()
-{
-	cpu_state *cpustate = (cpu_state *)opaque;
-	return cpustate->shutdown;
-}
-
-#define STATE_VERSION	6
-
-bool I286::process_state(FILEIO* state_fio, bool loading)
+bool I86::process_state(FILEIO* state_fio, bool loading)
 {
 	cpu_state *cpustate = (cpu_state *)opaque;
 	
@@ -411,28 +430,11 @@ bool I286::process_state(FILEIO* state_fio, bool loading)
 		return false;
 	}
 	state_fio->StateArray(cpustate->regs.w, sizeof(cpustate->regs.w), 1);
-	state_fio->StateValue(cpustate->amask);
 	state_fio->StateValue(cpustate->pc);
 	state_fio->StateValue(cpustate->prevpc);
-	state_fio->StateValue(cpustate->flags);
-	state_fio->StateValue(cpustate->msw);
 	state_fio->StateArray(cpustate->base, sizeof(cpustate->base), 1);
 	state_fio->StateArray(cpustate->sregs, sizeof(cpustate->sregs), 1);
-	state_fio->StateArray(cpustate->limit, sizeof(cpustate->limit), 1);
-	state_fio->StateArray(cpustate->rights, sizeof(cpustate->rights), 1);
-	state_fio->StateArray(cpustate->valid, sizeof(cpustate->valid), 1);
-	state_fio->StateValue(cpustate->gdtr.base);
-	state_fio->StateValue(cpustate->gdtr.limit);
-	state_fio->StateValue(cpustate->idtr.base);
-	state_fio->StateValue(cpustate->idtr.limit);
-	state_fio->StateValue(cpustate->ldtr.sel);
-	state_fio->StateValue(cpustate->ldtr.base);
-	state_fio->StateValue(cpustate->ldtr.limit);
-	state_fio->StateValue(cpustate->ldtr.rights);
-	state_fio->StateValue(cpustate->tr.sel);
-	state_fio->StateValue(cpustate->tr.base);
-	state_fio->StateValue(cpustate->tr.limit);
-	state_fio->StateValue(cpustate->tr.rights);
+	state_fio->StateValue(cpustate->flags);
 	state_fio->StateValue(cpustate->AuxVal);
 	state_fio->StateValue(cpustate->OverVal);
 	state_fio->StateValue(cpustate->SignVal);
@@ -442,9 +444,10 @@ bool I286::process_state(FILEIO* state_fio, bool loading)
 	state_fio->StateValue(cpustate->ParityVal);
 	state_fio->StateValue(cpustate->TF);
 	state_fio->StateValue(cpustate->IF);
-#if 0
 	state_fio->StateValue(cpustate->MF);
-#endif
+	state_fio->StateValue(cpustate->MF_WriteDisabled);
+	state_fio->StateValue(cpustate->NF);
+	state_fio->StateValue(cpustate->int_vector);
 	state_fio->StateValue(cpustate->nmi_state);
 	state_fio->StateValue(cpustate->irq_state);
 	state_fio->StateValue(cpustate->test_state);
@@ -452,8 +455,8 @@ bool I286::process_state(FILEIO* state_fio, bool loading)
 	state_fio->StateValue(cpustate->extra_cycles);
 	state_fio->StateValue(cpustate->halted);
 	state_fio->StateValue(cpustate->busreq);
-	state_fio->StateValue(cpustate->trap_level);
-	state_fio->StateValue(cpustate->shutdown);
+	state_fio->StateValue(cpustate->ip);
+	state_fio->StateValue(cpustate->sp);
 #ifdef USE_DEBUGGER
 	state_fio->StateValue(cpustate->total_icount);
 #endif

@@ -50,8 +50,6 @@ private:
 	int req_chip, req_level;
 	uint8_t req_bit;
 	
-	void update_intr();
-	
 public:
 	I8259(VM_TEMPLATE* parent_vm, EMU* parent_emu) : DEVICE(parent_vm, parent_emu)
 	{
@@ -76,9 +74,10 @@ public:
 		// request from Z80 familly
 		write_signal(bit, line ? 1 : 0, 1);
 	}
+	void update_intr();
 	uint32_t get_intr_ack();
 	
-	// unique functions
+	// unique function
 	void set_context_cpu(DEVICE* device)
 	{
 		d_cpu = device;

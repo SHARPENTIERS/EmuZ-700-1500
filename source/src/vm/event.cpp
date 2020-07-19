@@ -388,7 +388,7 @@ void EVENT::cancel_event(DEVICE* device, int register_id)
 	if(0 <= register_id && register_id < MAX_EVENT) {
 		event_t *event_handle = &event[register_id];
 		if(device != NULL && device != event_handle->device) {
-			this->out_debug_log(_T("EVENT: device (name=%s, id=%d) tries to calcel event that is not its own !!!\n"), device->this_device_name, device->this_device_id);
+			this->out_debug_log(_T("EVENT: device (name=%s, id=%d) tries to cancel event that is not its own !!!\n"), device->this_device_name, device->this_device_id);
 			return;
 		}
 		if(event_handle->active) {
@@ -449,8 +449,8 @@ uint32_t EVENT::get_event_remaining_clock(int register_id)
 {
 	if(0 <= register_id && register_id < MAX_EVENT) {
 		event_t *event_handle = &event[register_id];
-		if(event_handle->active && event->expired_clock > event_clocks) {
-			return (uint32_t)(event->expired_clock - event_clocks);
+		if(event_handle->active && event_handle->expired_clock > event_clocks) {
+			return (uint32_t)(event_handle->expired_clock - event_clocks);
 		}
 	}
 	return 0;

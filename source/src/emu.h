@@ -419,9 +419,10 @@ public:
 		int bank_num;
 		int cur_bank;
 	} d88_file[USE_FLOPPY_DISK];
-	void create_bank_floppy_disk(const _TCHAR* file_path, uint8_t type);
+	bool create_blank_floppy_disk(const _TCHAR* file_path, uint8_t type);
 	void open_floppy_disk(int drv, const _TCHAR* file_path, int bank);
 	void close_floppy_disk(int drv);
+	bool is_floppy_disk_connected(int drv);
 	bool is_floppy_disk_inserted(int drv);
 	void is_floppy_disk_protected(int drv, bool value);
 	bool is_floppy_disk_protected(int drv);
@@ -430,10 +431,12 @@ public:
 #ifdef USE_QUICK_DISK
 	void open_quick_disk(int drv, const _TCHAR* file_path);
 	void close_quick_disk(int drv);
+	bool is_quick_disk_connected(int drv);
 	bool is_quick_disk_inserted(int drv);
 	uint32_t is_quick_disk_accessed();
 #endif
 #ifdef USE_HARD_DISK
+	bool create_blank_hard_disk(const _TCHAR* file_path, int sector_size, int sectors, int surfaces, int cylinders);
 	void open_hard_disk(int drv, const _TCHAR* file_path);
 	void close_hard_disk(int drv);
 	bool is_hard_disk_inserted(int drv);

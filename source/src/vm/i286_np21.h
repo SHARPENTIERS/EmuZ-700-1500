@@ -1,22 +1,28 @@
 /*
 	Skelton for retropc emulator
 
-	Origin : MAME i286 core
+	Origin : np21/w i386c core
 	Author : Takeda.Toshiya
-	Date   : 2012.10.18-
+	Date   : 2020.02.02-
 
-	[ 80286 ]
+	[ i286 ]
 */
 
-#ifndef _I286_H_
-#define _I286_H_
+#ifndef _I286_NP21_H_
+#define _I286_NP21_H_
 
 #include "vm.h"
 #include "../emu.h"
 #include "device.h"
 
-#define SIG_I86_TEST	0
-#define SIG_I286_A20	1
+#define SIG_I286_A20	0
+
+enum {
+	INTEL_80286 = 0,
+	NEC_V30,
+	INTEL_8086,
+	INTEL_80186,
+};
 
 #ifdef USE_DEBUGGER
 class DEBUGGER;
@@ -25,28 +31,29 @@ class DEBUGGER;
 class I286 : public DEVICE
 {
 private:
-	DEVICE *d_mem, *d_io, *d_pic;
-#ifdef I86_PSEUDO_BIOS
-	DEVICE *d_bios;
-#endif
-#ifdef SINGLE_MODE_DMA
-	DEVICE *d_dma;
-#endif
+	DEVICE *device_pic;
 #ifdef USE_DEBUGGER
-	DEBUGGER *d_debugger;
+//	DEBUGGER *device_debugger;
+	DEVICE *device_mem_stored;
+	DEVICE *device_io_stored;
+	uint64_t total_cycles;
+	uint64_t prev_total_cycles;
 #endif
-	void *opaque;
+	int remained_cycles, extra_cycles;
+	bool busreq;
+	bool nmi_pending, irq_pending;
+	uint32_t PREV_CS_BASE;
+	uint16_t CPU_PREV_IP;
+	int run_one_opecode();
 	
 public:
 	I286(VM_TEMPLATE* parent_vm, EMU* parent_emu) : DEVICE(parent_vm, parent_emu)
 	{
-#ifdef I86_PSEUDO_BIOS
-		d_bios = NULL;
+#ifdef USE_DEBUGGER
+		total_cycles = prev_total_cycles = 0;
 #endif
-#ifdef SINGLE_MODE_DMA
-		d_dma = NULL;
-#endif
-		set_device_name(_T("80286 CPU"));
+		busreq = false;
+		device_model = INTEL_80286;
 	}
 	~I286() {}
 	
@@ -54,10 +61,10 @@ public:
 	void initialize();
 	void release();
 	void reset();
-	int run(int icount);
+	int run(int cycles);
 	void write_signal(int id, uint32_t data, uint32_t mask);
 	void set_intr_line(bool line, bool pending, uint32_t bit);
-	void set_extra_clock(int icount);
+	void set_extra_clock(int cycles);
 	int get_extra_clock();
 	uint32_t get_pc();
 	uint32_t get_next_pc();
@@ -70,17 +77,25 @@ public:
 	{
 		return true;
 	}
-	void *get_debugger()
-	{
-		return d_debugger;
-	}
+	void *get_debugger();
+//	{
+//		return device_debugger;
+//	}
 	uint32_t get_debug_prog_addr_mask()
 	{
-		return 0xffffff;
+		if(device_model == INTEL_80286) {
+			return 0xffffff;
+		} else {
+			return 0xfffff;
+		}
 	}
 	uint32_t get_debug_data_addr_mask()
 	{
-		return 0xffffff;
+		if(device_model == INTEL_80286) {
+			return 0xffffff;
+		} else {
+			return 0xfffff;
+		}
 	}
 	void write_debug_data8(uint32_t addr, uint32_t data);
 	uint32_t read_debug_data8(uint32_t addr);
@@ -98,40 +113,41 @@ public:
 	bool process_state(FILEIO* state_fio, bool loading);
 	
 	// unique function
-	void set_context_mem(DEVICE* device)
-	{
-		d_mem = device;
-	}
-	void set_context_io(DEVICE* device)
-	{
-		d_io = device;
-	}
+	void set_context_mem(DEVICE* device);
+//	{
+//		device_mem = device;
+//	}
+	void set_context_io(DEVICE* device);
+//	{
+//		device_io = device;
+//	}
 	void set_context_intr(DEVICE* device)
 	{
-		d_pic = device;
+		device_pic = device;
 	}
 #ifdef I86_PSEUDO_BIOS
-	void set_context_bios(DEVICE* device)
-	{
-		d_bios = device;
-	}
+	void set_context_bios(DEVICE* device);
+//	{
+//		device_bios = device;
+//	}
 #endif
 #ifdef SINGLE_MODE_DMA
-	void set_context_dma(DEVICE* device)
-	{
-		d_dma = device;
-	}
+	void set_context_dma(DEVICE* device);
+//	{
+//		device_dma = device;
+//	}
 #endif
 #ifdef USE_DEBUGGER
-	void set_context_debugger(DEBUGGER* device)
-	{
-		d_debugger = device;
-	}
+	void set_context_debugger(DEBUGGER* device);
+//	{
+//		device_debugger = device;
+//	}
 #endif
 	void set_address_mask(uint32_t mask);
 	uint32_t get_address_mask();
 	void set_shutdown_flag(int shutdown);
 	int get_shutdown_flag();
+	int device_model;
 };
 
 #endif

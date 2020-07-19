@@ -1,6 +1,5 @@
 /*
 	SHARP MZ-700 Emulator 'EmuZ-700'
-	SHARP MZ-800 Emulator 'EmuZ-800'
 	SHARP MZ-1500 Emulator 'EmuZ-1500'
 
 	Author : Takeda.Toshiya
@@ -15,23 +14,21 @@
 #if defined(_MZ700)
 #define DEVICE_NAME		"SHARP MZ-700"
 #define CONFIG_NAME		"mz700"
-#elif defined(_MZ800)
-#define DEVICE_NAME		"SHARP MZ-800"
-#define CONFIG_NAME		"mz800"
 #elif defined(_MZ1500)
 #define DEVICE_NAME		"SHARP MZ-1500"
 #define CONFIG_NAME		"mz1500"
 #endif
 
 // device informations for virtual machine
-#if defined(_MZ800) || defined(_PAL)
-#define FRAMES_PER_SEC		(3546895.0 / 228.0 / 312.0)
+#if defined(_MZ700) && defined(_PAL)
+#define LPHI_CLOCKS			17734475
+#define CPU_CLOCKS			(LPHI_CLOCKS/5)
 #define LINES_PER_FRAME		312
-#define CPU_CLOCKS		3546895
+#define FRAMES_PER_SEC		(CPU_CLOCKS / 227.0 / LINES_PER_FRAME)
 #else
-#define FRAMES_PER_SEC		(3579545.0 / 228.0 / 262.0)
+#define CPU_CLOCKS			3579545
 #define LINES_PER_FRAME		262
-#define CPU_CLOCKS		3579545
+#define FRAMES_PER_SEC		(CPU_CLOCKS / 228.0 / LINES_PER_FRAME)
 #endif
 #define SCREEN_WIDTH		640
 #define SCREEN_HEIGHT		400
@@ -39,7 +36,7 @@
 #define IO_ADDR_MAX		0x100
 #define Z80_MEMORY_WAIT
 #define Z80_IO_WAIT
-#if defined(_MZ800) || defined(_MZ1500)
+#if defined(_MZ1500)
 #define MAX_DRIVE		4
 #define HAS_MB8876
 #endif
@@ -50,31 +47,22 @@
 // device informations for win32
 #if defined(_MZ700)
 #define USE_DIPSWITCH
-#elif defined(_MZ800)
-#define USE_BOOT_MODE		2
 #endif
 #define USE_TAPE		1
 #define USE_ROMDISK
-#if defined(_MZ800) || defined(_MZ1500)
+#if defined(_MZ1500)
 #define USE_FLOPPY_DISK		2
 #define USE_QUICK_DISK		1
 #endif
 #define USE_AUTO_KEY		5
 #define USE_AUTO_KEY_RELEASE	6
 #define USE_AUTO_KEY_CAPS
-#if defined(_MZ700) || defined(_MZ1500)
 #define USE_AUTO_KEY_NUMPAD
 #define USE_VM_AUTO_KEY_TABLE
-#endif
-#if defined(_MZ800)
-#define USE_MONITOR_TYPE	2
-#endif
 #define USE_SCREEN_FILTER
 #define USE_SCANLINE
 #if defined(_MZ700)
 #define USE_SOUND_VOLUME	3
-#elif defined(_MZ800)
-#define USE_SOUND_VOLUME	5
 #elif defined(_MZ1500)
 #define USE_SOUND_VOLUME	6
 #endif
@@ -85,7 +73,6 @@
 #define USE_DEBUGGER
 #define USE_STATE
 
-#if defined(_MZ700) || defined(_MZ1500)
 static const int vm_auto_key_table_base[][2] = {
 	// thanks Mr.Koucha Youkan
 	{0xa1,	0x300 | 0xbe},	// '¡'    *** MODIFIED ***
@@ -153,7 +140,6 @@ static const int vm_auto_key_table_base[][2] = {
 	{0xdf,	0x200 | 0xdd},	// 'ß'    *** MODIFIED ***
 	{-1,	-1},
 };
-#endif
 
 #include "../../common.h"
 #include "../../fileio.h"
@@ -161,13 +147,11 @@ static const int vm_auto_key_table_base[][2] = {
 
 #ifdef USE_SOUND_VOLUME
 static const _TCHAR *sound_device_caption[] = {
-#if defined(_MZ800)
-	_T("PSG"),
-#elif defined(_MZ1500)
+#if defined(_MZ1500)
 	_T("PSG #1"), _T("PSG #2"),
 #endif
 	_T("Beep"), _T("CMT (Signal)"),
-#if defined(_MZ800) || defined(_MZ1500)
+#if defined(_MZ1500)
 	_T("Noise (FDD)"),
 #endif
 	_T("Noise (CMT)"),
@@ -195,16 +179,14 @@ class RAMFILE;
 #if defined(USE_ROMDISK)
 class SST39SF040;
 #endif
-#if defined(_MZ800) || defined(_MZ1500)
+#if defined(_MZ1500)
 class MB8877;
 class NOT;
 class SN76489AN;
 class Z80PIO;
 class Z80SIO;
 class FLOPPY;
-#if defined(_MZ1500)
 class PSG;
-#endif
 class QUICKDISK;
 #endif
 
@@ -235,32 +217,21 @@ protected:
 	SST39SF040* sst39sf040;
 #endif
 
-#if defined(_MZ800) || defined(_MZ1500)
+#if defined(_MZ1500)
 	AND* and_snd;
 	MB8877* fdc;
-#if defined(_MZ800)
-	NOT* not_pit;
-	SN76489AN* psg;
-#elif defined(_MZ1500)
 	DEVICE* printer;
 	NOT* not_reset;
 	NOT* not_strobe;
 	SN76489AN* psg_l;
 	SN76489AN* psg_r;
-#endif
 	Z80PIO* pio_int;
 	Z80SIO* sio_rs;	// RS-232C
 	Z80SIO* sio_qd;	// QD
 	
 	FLOPPY* floppy;
-#if defined(_MZ1500)
 	PSG* psg;
-#endif
 	QUICKDISK* qd;
-#endif
-	
-#if defined(_MZ800)
-	int boot_mode;
 #endif
 	
 public:
@@ -314,7 +285,7 @@ public:
 	void push_fast_rewind(int drv);
 	void push_apss_forward(int drv) {}
 	void push_apss_rewind(int drv) {}
-#if defined(_MZ800) || defined(_MZ1500)
+#if defined(_MZ1500)
 	void open_quick_disk(int drv, const _TCHAR* file_path);
 	void close_quick_disk(int drv);
 	bool is_quick_disk_inserted(int drv);
@@ -337,9 +308,6 @@ public:
 	
 	// devices
 	DEVICE* get_device(int id);
-//	DEVICE* dummy;
-//	DEVICE* first_device;
-//	DEVICE* last_device;
 };
 
 #endif

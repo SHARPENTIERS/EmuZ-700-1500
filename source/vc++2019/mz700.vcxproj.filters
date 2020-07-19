@@ -131,9 +131,6 @@
     <ClCompile Include="..\src\vm\mz700\ramfile.cpp">
       <Filter>Source Files\VM Driver Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\vm\mz700\ds1249y.cpp">
-      <Filter>Source Files\VM Driver Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\vm\mz700\sst39sf040.cpp">
       <Filter>Source Files\VM Driver Source Files</Filter>
     </ClCompile>
@@ -219,9 +216,6 @@
     </ClInclude>
     <ClInclude Include="..\src\res\resource.h">
       <Filter>Resource Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\vm\mz700\ds1249y.h">
-      <Filter>Header Files\VM Driver Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\vm\mz700\sst39sf040.h">
       <Filter>Header Files\VM Driver Header Files</Filter>

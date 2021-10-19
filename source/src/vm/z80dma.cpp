@@ -45,7 +45,7 @@
 #define INT_MATCH		1
 #define INT_END_OF_BLOCK	2
 
-#define GET_REGNUM(r)		(&(r) - &(WR0))
+#define GET_REGNUM(r)		(int)(&(r) - &(WR0))
 
 #define WR0			regs.m[0][0]
 #define WR1			regs.m[1][0]
@@ -215,6 +215,10 @@ void Z80DMA::write_io8(uint32_t addr, uint32_t data)
 			this->out_debug_log(_T("Z80DMA: WR5=%2x\n"), data);
 #endif
 			WR5 = data;
+			// RDY signal sense is a LEVEL, not an EDDGE (thanks Mr.Sato)
+			if(now_ready() && INT_ON_READY) {
+				request_intr(INT_RDY);
+			}
 		} else if((data & 0x83) == 0x83) {
 #ifdef DMA_DEBUG
 			this->out_debug_log(_T("Z80DMA: WR6=%2x\n"), data);
@@ -304,12 +308,20 @@ void Z80DMA::write_io8(uint32_t addr, uint32_t data)
 				break;
 			case CMD_FORCE_READY:
 				force_ready = true;
+				// RDY signal sense is a LEVEL, not an EDDGE (thanks Mr.Sato)
+				if(now_ready() && INT_ON_READY) {
+					request_intr(INT_RDY);
+				}
 #ifndef SINGLE_MODE_DMA
 				do_dma();
 #endif
 				break;
 			case CMD_ENABLE_INTERRUPTS:
 				WR3 |= 0x20;
+				// RDY signal sense is a LEVEL, not an EDDGE (thanks Mr.Sato)
+				if(now_ready() && INT_ON_READY) {
+					request_intr(INT_RDY);
+				}
 				break;
 			case CMD_DISABLE_INTERRUPTS:
 				WR3 &= ~0x20;
@@ -341,6 +353,10 @@ void Z80DMA::write_io8(uint32_t addr, uint32_t data)
 				wr_tmp[wr_num++] = GET_REGNUM(INTERRUPT_VECTOR);
 			}
 			wr_ptr = 0;
+			// RDY signal sense is a LEVEL, not an EDDGE (thanks Mr.Sato)
+			if(now_ready() && INT_ON_READY) {
+				request_intr(INT_RDY);
+			}
 		} else if(wr_tmp[wr_num] == GET_REGNUM(READ_MASK)) {
 			// from Xmillenium
 			upcount--;
@@ -718,7 +734,7 @@ void Z80DMA::request_bus()
 #ifdef SINGLE_MODE_DMA
 			d_cpu->write_signal(SIG_CPU_BUSREQ, 1, 1);
 #endif
-			d_cpu->set_extra_clock(2);
+			d_cpu->set_extra_clock(3);
 		}
 		bus_master = true;
 	}

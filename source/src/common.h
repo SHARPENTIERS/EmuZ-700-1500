@@ -108,7 +108,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>
-#include <typeinfo>
+#include <math.h>
+#if defined(_MSC_VER) && (_MSC_VER < 1920)
+	#include <typeinfo.h>
+#else
+	#include <typeinfo>
+#endif
 #include <assert.h>
 #include <errno.h>
 
@@ -1015,6 +1020,8 @@ const _TCHAR *DLL_PREFIX get_application_path();
 const _TCHAR *DLL_PREFIX get_initial_current_path();
 const _TCHAR *DLL_PREFIX create_local_path(const _TCHAR *format, ...);
 void DLL_PREFIX create_local_path(_TCHAR *file_path, int length, const _TCHAR *format, ...);
+const _TCHAR *DLL_PREFIX create_absolute_path(const _TCHAR *format, ...);
+void DLL_PREFIX create_absolute_path(_TCHAR *file_path, int length, const _TCHAR *format, ...);
 bool DLL_PREFIX is_absolute_path(const _TCHAR *file_path);
 const _TCHAR *DLL_PREFIX create_date_file_path(const _TCHAR *extension);
 void DLL_PREFIX create_date_file_path(_TCHAR *file_path, int length, const _TCHAR *extension);

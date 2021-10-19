@@ -155,12 +155,16 @@ BEGIN
         POPUP "Display"
         BEGIN
             MENUITEM "Scanline",                ID_VM_MONITOR_SCANLINE
+            MENUITEM "Scanline Auto",           ID_VM_MONITOR_SCANLINE_AUTO
+            MENUITEM "Color Blender",           ID_VM_MONITOR_COLOR_BLENDER
         END
     END
     POPUP "Host"
     BEGIN
         MENUITEM "Rec Movie 60fps",             ID_HOST_REC_MOVIE_60FPS
+        MENUITEM "Rec Movie 50fps",             ID_HOST_REC_MOVIE_50FPS
         MENUITEM "Rec Movie 30fps",             ID_HOST_REC_MOVIE_30FPS
+        MENUITEM "Rec Movie 25fps",             ID_HOST_REC_MOVIE_25FPS
         MENUITEM "Rec Movie 15fps",             ID_HOST_REC_MOVIE_15FPS
         MENUITEM "Rec Sound",                   ID_HOST_REC_SOUND
         MENUITEM "Stop",                        ID_HOST_REC_STOP
@@ -212,6 +216,7 @@ BEGIN
             MENUITEM "Volume",                  ID_SOUND_VOLUME
         END
         MENUITEM SEPARATOR
+        MENUITEM "Use Direct2D1",               ID_HOST_USE_D2D1
         MENUITEM "Use Direct3D9",               ID_HOST_USE_D3D9
         MENUITEM "Wait Vsync",                  ID_HOST_WAIT_VSYNC
         MENUITEM "Use DirectInput",             ID_HOST_USE_DINPUT

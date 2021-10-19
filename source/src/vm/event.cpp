@@ -563,6 +563,7 @@ uint16_t* EVENT::create_sound(int* extra_frames)
 		drive();
 		frames++;
 	}
+//#define LOW_PASS_FILTER
 #ifdef LOW_PASS_FILTER
 	// low-pass filter
 	for(int i = 0; i < sound_samples - 1; i++) {

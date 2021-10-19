@@ -101,8 +101,12 @@ typedef struct {
 	#endif
 	#if defined(USE_SHARED_DLL) || defined(USE_SCANLINE)
 		bool scan_line;
+		bool scan_line_auto;
 	#endif
-	#if defined(USE_SHARED_DLL) || defined(USE_PRINTER_TYPE)
+	#if defined(USE_SHARED_DLL) || defined(USE_COLOR_BLENDER)
+		bool color_blender;
+	#endif
+#if defined(USE_SHARED_DLL) || defined(USE_PRINTER_TYPE)
 		int printer_type;
 	#endif
 	#if defined(USE_SHARED_DLL) || defined(USE_FLOPPY_DISK)
@@ -213,6 +217,7 @@ typedef struct {
 	
 	// win32
 	#if defined(USE_SHARED_DLL) || defined(_WIN32)
+		bool use_d2d1;
 		bool use_d3d9;
 		bool wait_vsync;
 		bool use_dinput;

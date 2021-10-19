@@ -25,6 +25,11 @@
 #include "bubcom80/bubcom80.h"
 #endif
 
+// CANON BX-1
+#ifdef _BX1
+#include "bx1/bx1.h"
+#endif
+
 // Hino Electronics CEFUCOM-21
 #ifdef _CEFUCOM21
 #include "cefucom21/cefucom21.h"
@@ -213,6 +218,16 @@
 // SEGA MASTER SYSTEM
 #ifdef _MASTERSYSTEM
 #include "gamegear/mastersystem.h"
+#endif
+
+// Nippon Mail Service MICOM MAHJONG
+#ifdef _MICOM_MAHJONG
+#include "micom_mahjong/micom_mahjong.h"
+#endif
+
+// MITEC MP85
+#ifdef _MP85
+#include "mp85/mp85.h"
 #endif
 
 // ASCII MSX
@@ -538,6 +553,11 @@
 #include "smc777/smc777.h"
 #endif
 
+// SPECTRAVIDEO SVI-3x8
+#ifdef _SVI3X8
+#include "svi3x8/msx_ex.h"
+#endif
+
 // NEC TK-80BS (COMPO BS/80)
 #ifdef _TK80BS
 #include "tk80bs/tk80bs.h"
@@ -551,6 +571,11 @@
 // NEC TK-85
 #ifdef _TK85
 #include "tk80bs/tk80bs.h"
+#endif
+
+// GAKKEN TV BOY
+#ifdef _TVBOY
+#include "tvboy/tvboy.h"
 #endif
 
 // CANON X-07

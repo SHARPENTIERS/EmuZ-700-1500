@@ -33,7 +33,7 @@ private:
 #if defined(_MZ1500)
 	uint8_t ext[0x1800];	// MZ-1500 EXT 6KB
 #endif
-	uint8_t font[0x1000];	// CGROM 4KB
+	uint8_t font[0x2000];	// CGROM 4KB / XCGROM 8KB
 #if defined(_MZ700)
 	uint8_t pcg[0x1000];	// PCG-700 2KB + Lower CGROM 2KB
 #elif defined(_MZ1500)
@@ -54,7 +54,6 @@ private:
 	int8_t ipl_page;
 #endif
 	void update_map_low();
-	void update_map_middle();
 	void update_map_high();
 	
 	// crtc

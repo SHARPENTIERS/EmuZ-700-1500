@@ -30,7 +30,7 @@ void PCM1BIT::reset()
 void PCM1BIT::write_signal(int id, uint32_t data, uint32_t mask)
 {
 	if(id == SIG_PCM1BIT_SIGNAL) {
-		bool next = ((data & mask) != 0);
+		bool next = inverted ? ((data & mask) == 0) : ((data & mask) != 0);
 		if(signal != next) {
 			if(signal) {
 				positive_clocks += get_passed_clock(prev_clock);

@@ -21,7 +21,7 @@
 class PCM1BIT : public DEVICE
 {
 private:
-	bool signal, on, mute, realtime;
+	bool signal, on, mute, realtime, inverted;
 	int changed;
 	uint32_t prev_clock;
 	int positive_clocks, negative_clocks;
@@ -31,7 +31,7 @@ private:
 	void update_realtime_render();
 	
 public:
-	PCM1BIT(VM_TEMPLATE* parent_vm, EMU* parent_emu) : DEVICE(parent_vm, parent_emu)
+	PCM1BIT(VM_TEMPLATE* parent_vm, EMU* parent_emu, bool inverted = false) : DEVICE(parent_vm, parent_emu), inverted(inverted)
 	{
 		volume_l = volume_r = 1024;
 		set_device_name(_T("1-Bit PCM Sound"));

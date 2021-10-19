@@ -70,7 +70,7 @@ VM::VM(EMU* parent_emu) : VM_TEMPLATE(parent_emu)
 	pit = new I8253(this, emu);
 	pio = new I8255(this, emu);
 	io = new IO(this, emu);
-	pcm = new PCM1BIT(this, emu);
+	pcm = new PCM1BIT(this, emu, true);
 	cpu = new Z80(this, emu);
 	
 	emm = new EMM(this, emu);
@@ -167,7 +167,7 @@ VM::VM(EMU* parent_emu) : VM_TEMPLATE(parent_emu)
 #endif
 	
 	// 8253:CLK#1 <- 15.7KHz
-	pit->set_constant_clock(1, CPU_CLOCKS / 228); // TODO
+	//pit->set_constant_clock(1, CPU_CLOCKS / 228); // should be handled through BLANK event
 	
 	// 8253:OUT#1 -> 8253:CLK#2
 	pit->set_context_ch1(pit, SIG_I8253_CLOCK_2, 1);

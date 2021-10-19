@@ -66,8 +66,18 @@
 	} \
 }
 
-#define IPL_FILE_NAME	"IPL.ROM"
-#define EXT_FILE_NAME	"EXT.ROM"
+#define DEFAULT_IPLROM_FILE_NAME	"IPL.ROM"
+#define DEFAULT_EXTROM_FILE_NAME	"EXT.ROM"
+#define DEFAULT_XCGROM_FILE_NAME	"XCG.ROM"
+#if defined(_PAL)
+#define IPLROM_FILE_NAME	"IPL-EU.ROM"
+#define EXTROM_FILE_NAME	"EXT-EU.ROM"
+#define XCGROM_FILE_NAME	"XCG-EU.ROM"
+#else
+#define IPLROM_FILE_NAME	"IPL-JP.ROM"
+#define EXTROM_FILE_NAME	"EXT-JP.ROM"
+#define XCGROM_FILE_NAME	"XCG-JP.ROM"
+#endif
 
 void MEMORY::initialize()
 {
@@ -82,10 +92,13 @@ void MEMORY::initialize()
 #endif
 	memset(font, 0, sizeof(font));
 	memset(rdmy, 0xff, sizeof(rdmy));
-	
+
 	// load rom images
 	FILEIO* fio = new FILEIO();
-	if(fio->Fopen(create_local_path(_T(IPL_FILE_NAME)), FILEIO_READ_BINARY)) {
+	if (fio->Fopen(create_local_path(_T(IPLROM_FILE_NAME)), FILEIO_READ_BINARY)) {
+		fio->Fread(ipl, sizeof(ipl), 1);
+		fio->Fclose();
+	} else if (fio->Fopen(create_local_path(_T(DEFAULT_IPLROM_FILE_NAME)), FILEIO_READ_BINARY)) {
 		fio->Fread(ipl, sizeof(ipl), 1);
 		fio->Fclose();
 	}
@@ -93,10 +106,20 @@ void MEMORY::initialize()
 	if(fio->Fopen(create_local_path(_T(EXT_FILE_NAME)), FILEIO_READ_BINARY)) {
 		fio->Fread(ext, sizeof(ext), 1);
 		fio->Fclose();
+	} else if (fio->Fopen(create_local_path(_T(DEFAULT_EXT_FILE_NAME)), FILEIO_READ_BINARY)) {
+		fio->Fread(ext, sizeof(ext), 1);
+		fio->Fclose();
 	}
 #endif
-	if(fio->Fopen(create_local_path(_T("FONT.ROM")), FILEIO_READ_BINARY)) {
-		fio->Fread(font, sizeof(font), 1);
+	if(fio->Fopen(create_local_path(_T(XCGROM_FILE_NAME)), FILEIO_READ_BINARY)) {
+		if (fio->Fread(font, sizeof(font), 1) < sizeof(font)) {
+			memcpy(font + 0x1000, font, sizeof(font) / 2);
+		};
+		fio->Fclose();
+	} else if (fio->Fopen(create_local_path(_T(DEFAULT_XCGROM_FILE_NAME)), FILEIO_READ_BINARY)) {
+		if (fio->Fread(font, sizeof(font), 1) < sizeof(font)) {
+			memcpy(font + 0x1000, font, sizeof(font) / 2);
+		};
 		fio->Fclose();
 	}
 
@@ -140,7 +163,6 @@ void MEMORY::reset()
 	pcg_bank = 0;
 #endif
 	update_map_low();
-	update_map_middle();
 	update_map_high();
 	
 	// reset crtc
@@ -384,7 +406,6 @@ void MEMORY::write_io8(uint32_t addr, uint32_t data)
 	case 0xe0:
 		mem_bank &= ~MEM_BANK_MON_L;
 		update_map_low();
-		update_map_middle();
 		break;
 	case 0xe1:
 		mem_bank &= ~MEM_BANK_MON_H;
@@ -404,7 +425,6 @@ void MEMORY::write_io8(uint32_t addr, uint32_t data)
 		mem_bank &= ~MEM_BANK_PCG;
 #endif
 		update_map_low();
-		update_map_middle();
 		update_map_high();
 		break;
 #if defined(_MZ1500)
@@ -458,7 +478,7 @@ void MEMORY::set_blank(bool val)
 	if (blank != val) {
 #if defined(_MZ700) && defined(_PAL)
 		// BLANK -> 8253:CLK1 TODO
-		//d_pit->write_signal(SIG_I8253_CLOCK_1, val ? 0 : 0xff, 0x20);
+		d_pit->write_signal(SIG_I8253_CLOCK_1, val ? 0 : 0xff, 0x20);
 #endif
 		blank = val;
 	}
@@ -471,10 +491,6 @@ void MEMORY::update_map_low()
 	} else {
 		SET_BANK(0x0000, 0x0fff, ram, ram);
 	}
-}
-
-void MEMORY::update_map_middle()
-{
 }
 
 void MEMORY::update_map_high()
@@ -520,7 +536,11 @@ void MEMORY::draw_line(int v)
 #if defined(_MZ1500)
 		uint8_t pcg_attr = vram[ptr | 0xc00];
 #endif
+#if defined(_MZ700)
+		uint16_t code = (vram[ptr] << 3) | ((attr & 0x80) << 4) | ((attr & 0x08) << 10);
+#else
 		uint16_t code = (vram[ptr] << 3) | ((attr & 0x80) << 4);
+#endif
 		uint8_t col_b = attr & 7;
 		uint8_t col_f = (attr >> 4) & 7;
 #if defined(_MZ700)
@@ -607,15 +627,23 @@ void MEMORY::draw_screen()
 #if defined(_MZ1500)
 			dest0[x2] = dest0[x2 + 1] = palette_pc[palette[src[x] & 7]];
 #else
-			dest0[x2] = dest0[x2 + 1] = (palette_pc[src[x] & 7] & RGB_COLOR(0x7F, 0x7F, 0x7F)) + (palette_pc[old[x] & 7] & RGB_COLOR(0x7F, 0x7F, 0x7F));
+			if (config.color_blender) {
+				dest0[x2] = dest0[x2 + 1] = (palette_pc[src[x] & 7] & RGB_COLOR(0x7F, 0x7F, 0x7F)) + (palette_pc[old[x] & 7] & RGB_COLOR(0x7F, 0x7F, 0x7F));
+			} else {
+				dest0[x2] = dest0[x2 + 1] = (palette_pc[src[x] & 7]);
+			}
 #endif
 		}
 		if(!config.scan_line) {
 			my_memcpy(dest1, dest0, 640 * sizeof(scrntype_t));
-			my_memcpy(old, src, 320 * sizeof(uint8_t));
+			if (config.color_blender) {
+				my_memcpy(old, src, 320 * sizeof(uint8_t));
+			}
 		} else {
 			memset(dest1, 0, 640 * sizeof(scrntype_t));
-			my_memcpy(old, src, 320 * sizeof(uint8_t));
+			if (config.color_blender) {
+				my_memcpy(old, src, 320 * sizeof(uint8_t));
+			}
 		}
 	}
 	emu->screen_skip_line(true);
@@ -676,7 +704,6 @@ bool MEMORY::process_state(FILEIO* state_fio, bool loading)
 	// post process
 	if(loading) {
 		update_map_low();
-		update_map_middle();
 		update_map_high();
 	}
 	return true;

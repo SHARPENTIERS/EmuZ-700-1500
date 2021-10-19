@@ -20,18 +20,6 @@
 static FILEIO* logfile = NULL;
 static FILEIO* cmdfile = NULL;
 
-const _TCHAR *my_absolute_path(const _TCHAR *file_name)
-{
-	static _TCHAR file_path[_MAX_PATH];
-	
-	if(is_absolute_path(file_name)) {
-		my_tcscpy_s(file_path, _MAX_PATH, file_name);
-	} else {
-		my_stprintf_s(file_path, _MAX_PATH, _T("%s%s"), get_initial_current_path(), file_name);
-	}
-	return (const _TCHAR *)file_path;
-}
-
 void my_printf(OSD *osd, const _TCHAR *format, ...)
 {
 	_TCHAR buffer[8192];
@@ -44,7 +32,7 @@ void my_printf(OSD *osd, const _TCHAR *format, ...)
 	if(logfile != NULL && logfile->IsOpened()) {
 		logfile->Fwrite(buffer, _tcslen(buffer) * sizeof(_TCHAR), 1);
 	}
-	osd->write_console(buffer, _tcslen(buffer));
+	osd->write_console(buffer, (unsigned int)_tcslen(buffer));
 }
 
 void my_putch(OSD *osd, _TCHAR c)
@@ -254,7 +242,7 @@ void* debugger_thread(void *lpx)
 	_TCHAR buffer[8192];
 	bool cp932 = (p->osd->get_console_code_page() == 932);
 	
-	p->osd->open_console(create_string(_T("Debugger - %s"), _T(DEVICE_NAME)));
+	p->osd->open_console(120, 30, create_string(_T("Debugger - %s"), _T(DEVICE_NAME)));
 	
 	// break cpu
 	DEVICE *cpu = p->vm->get_cpu(p->cpu_index);
@@ -383,7 +371,7 @@ void* debugger_thread(void *lpx)
 								}
 								memcpy(command, cpu_debugger->history[index], sizeof(command));
 								my_printf(p->osd, _T("%s"), command);
-								enter_ptr = _tcslen(command);
+								enter_ptr = (int)_tcslen(command);
 							} else {
 								history_ptr = history_ptr_stored;
 							}
@@ -493,7 +481,7 @@ void* debugger_thread(void *lpx)
 					uint32_t addr = my_hexatoi(target, params[1]) % target->get_debug_data_addr_space();
 					my_tcscpy_s(buffer, array_length(buffer), prev_command);
 					if((token = my_tcstok_s(buffer, _T("\""), &context)) != NULL && (token = my_tcstok_s(NULL, _T("\""), &context)) != NULL) {
-						int len = _tcslen(token);
+						int len = (int)_tcslen(token);
 						for(int i = 0; i < len; i++) {
 							target->write_debug_data8(addr, token[i] & 0xff);
 							addr = (addr + 1) % target->get_debug_data_addr_space();
@@ -670,12 +658,12 @@ void* debugger_thread(void *lpx)
 				if(num >= 2 && params[1][0] == _T('\"')) {
 					my_tcscpy_s(buffer, array_length(buffer), prev_command);
 					if((token = my_tcstok_s(buffer, _T("\""), &context)) != NULL && (token = my_tcstok_s(NULL, _T("\""), &context)) != NULL) {
-						my_tcscpy_s(cpu_debugger->file_path, _MAX_PATH, my_absolute_path(token));
+						my_tcscpy_s(cpu_debugger->file_path, _MAX_PATH, create_absolute_path(token));
 					} else {
 						my_printf(p->osd, _T("invalid parameter\n"));
 					}
 				} else if(num == 2) {
-					my_tcscpy_s(cpu_debugger->file_path, _MAX_PATH, my_absolute_path(params[1]));
+					my_tcscpy_s(cpu_debugger->file_path, _MAX_PATH, create_absolute_path(params[1]));
 				} else {
 					my_printf(p->osd, _T("invalid parameter number\n"));
 				}
@@ -1145,7 +1133,7 @@ RESTART_GO:
 						logfile = NULL;
 					}
 					logfile = new FILEIO();
-					logfile->Fopen(my_absolute_path(params[1]), FILEIO_WRITE_ASCII);
+					logfile->Fopen(create_absolute_path(params[1]), FILEIO_WRITE_ASCII);
 				} else {
 					my_printf(p->osd, _T("invalid parameter number\n"));
 				}
@@ -1158,7 +1146,7 @@ RESTART_GO:
 					} else {
 						cmdfile = new FILEIO();
 					}
-					if(!cmdfile->Fopen(my_absolute_path(params[1]), FILEIO_READ_ASCII)) {
+					if(!cmdfile->Fopen(create_absolute_path(params[1]), FILEIO_READ_ASCII)) {
 						delete cmdfile;
 						cmdfile = NULL;
 						my_printf(p->osd, _T("can't open %s\n"), params[1]);

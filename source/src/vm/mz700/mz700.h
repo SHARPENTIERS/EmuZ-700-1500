@@ -47,6 +47,7 @@
 // device informations for win32
 #if defined(_MZ700)
 #define USE_DIPSWITCH
+#define USE_COLOR_BLENDER
 #endif
 #define USE_TAPE		1
 #define USE_ROMDISK

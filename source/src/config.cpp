@@ -71,6 +71,9 @@ void initialize_config()
 	#if defined(USE_MONITOR_TYPE) && defined(MONITOR_TYPE_DEFAULT)
 		config.monitor_type = MONITOR_TYPE_DEFAULT;
 	#endif
+	#if defined(USE_SCANLINE)
+		config.scan_line_auto = true;
+	#endif
 	#if defined(USE_PRINTER_TYPE) && defined(PRINTER_TYPE_DEFAULT)
 		config.printer_type = PRINTER_TYPE_DEFAULT;
 	#endif
@@ -95,6 +98,9 @@ void initialize_config()
 	#endif
 	#if defined(USE_ROMDISK)
 		config.ipl_storage = 0;
+	#endif
+	#if defined(USE_COLOR_BLENDER)
+		config.color_blender = false;
 	#endif
 		config.compress_state = true;
 	
@@ -136,6 +142,7 @@ void initialize_config()
 	// win32
 	#ifdef _WIN32
 		#ifndef ONE_BOARD_MICRO_COMPUTER
+//			config.use_d2d1 = true;
 			config.use_d3d9 = true;
 		#endif
 		config.use_dinput = true;
@@ -189,6 +196,7 @@ void load_config(const _TCHAR* config_path)
 	#endif
 	#ifdef USE_SCANLINE
 		config.scan_line = MyGetPrivateProfileBool(_T("Control"), _T("ScanLine"), config.scan_line, config_path);
+		config.scan_line_auto = MyGetPrivateProfileBool(_T("Control"), _T("ScanLineAuto"), config.scan_line_auto, config_path);
 	#endif
 	#ifdef USE_PRINTER
 		config.printer_type = MyGetPrivateProfileInt(_T("Control"), _T("PrinterType"), config.printer_type, config_path);
@@ -206,8 +214,11 @@ void load_config(const _TCHAR* config_path)
 			config.baud_high[drv] = MyGetPrivateProfileBool(_T("Control"), create_string(_T("BaudHigh%d"), drv + 1), config.baud_high[drv], config_path);
 		}
 	#endif
-	#if defined(USE_ROMDISK)
+	#ifdef USE_ROMDISK
 		config.ipl_storage = MyGetPrivateProfileInt(_T("ROMDisk"), _T("StorageID"), config.ipl_storage, config_path);
+	#endif
+	#ifdef USE_COLOR_BLENDER
+		config.color_blender = MyGetPrivateProfileInt(_T("Control"), _T("ColorBlender"), config.color_blender, config_path);
 	#endif
 		config.compress_state = MyGetPrivateProfileBool(_T("Control"), _T("CompressState"), config.compress_state, config_path);
 	
@@ -365,6 +376,7 @@ void load_config(const _TCHAR* config_path)
 	// win32
 	#ifdef _WIN32
 		#ifndef ONE_BOARD_MICRO_COMPUTER
+			config.use_d2d1 = MyGetPrivateProfileBool(_T("Win32"), _T("UseDirect2D1"), config.use_d2d1, config_path);
 			config.use_d3d9 = MyGetPrivateProfileBool(_T("Win32"), _T("UseDirect3D9"), config.use_d3d9, config_path);
 			config.wait_vsync = MyGetPrivateProfileBool(_T("Win32"), _T("WaitVSync"), config.wait_vsync, config_path);
 		#endif
@@ -425,6 +437,7 @@ void save_config(const _TCHAR* config_path)
 	#endif
 	#ifdef USE_SCANLINE
 		MyWritePrivateProfileBool(_T("Control"), _T("ScanLine"), config.scan_line, config_path);
+		MyWritePrivateProfileBool(_T("Control"), _T("ScanLineAuto"), config.scan_line_auto, config_path);
 	#endif
 	#ifdef USE_PRINTER
 		MyWritePrivateProfileInt(_T("Control"), _T("PrinterType"), config.printer_type, config_path);
@@ -444,6 +457,9 @@ void save_config(const _TCHAR* config_path)
 	#endif
 	#ifdef USE_ROMDISK
 		MyWritePrivateProfileInt(_T("ROMDisk"), _T("StorageID"), config.ipl_storage, config_path);
+	#endif
+	#ifdef USE_COLOR_BLENDER
+		MyWritePrivateProfileBool(_T("Control"), _T("ColorBlender"), config.color_blender, config_path);
 	#endif
 		MyWritePrivateProfileBool(_T("Control"), _T("CompressState"), config.compress_state, config_path);
 	
@@ -577,6 +593,7 @@ void save_config(const _TCHAR* config_path)
 	// win32
 	#ifdef _WIN32
 		#ifndef ONE_BOARD_MICRO_COMPUTER
+			MyWritePrivateProfileBool(_T("Win32"), _T("UseDirect2D1"), config.use_d2d1, config_path);
 			MyWritePrivateProfileBool(_T("Win32"), _T("UseDirect3D9"), config.use_d3d9, config_path);
 			MyWritePrivateProfileBool(_T("Win32"), _T("WaitVSync"), config.wait_vsync, config_path);
 		#endif

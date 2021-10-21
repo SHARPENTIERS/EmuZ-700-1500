@@ -731,7 +731,7 @@ int DATAREC::load_wav_image(int offset)
 					pair.b.h = tmp_buffer[tmp_ptr++]; \
 					sample[ch] = pair.s16; \
 				} else { \
-					sample[ch] = (tmp_buffer[tmp_ptr++] - 128) * 256; \
+					sample[ch] = ((int)tmp_buffer[tmp_ptr++] - 128) * 256; \
 				} \
 			} \
 			if(tmp_ptr == TMP_LENGTH) { \
@@ -1041,15 +1041,15 @@ int DATAREC::load_t77_image()
 	new tape file format for t-tune (from tape_fmt.txt)
 
 	offset:size :
-	00H   :  4  : ¯•ÊƒCƒ“ƒfƒbƒNƒX "TAPE"
-	04H   : 17  : ƒe[ƒv‚Ì–¼‘O(asciiz)
-	15H   :  5  : ƒŠƒU[ƒu
-	1AH   :  1  : ƒ‰ƒCƒgƒvƒƒeƒNƒgƒmƒbƒ`(00H=‘‚«‚İ‰ÂA10H=‘‚«‚İ‹Ö~j
-	1BH   :  1  : ‹L˜^ƒtƒH[ƒ}ƒbƒg‚Ìí—Ş(01H=’è‘¬ƒTƒ“ƒvƒŠƒ“ƒO•û–@j
-	1CH   :  4  : ƒTƒ“ƒvƒŠƒ“ƒOü”g”(‚g‚š’PˆÊj
-	20H   :  4  : ƒe[ƒvƒf[ƒ^‚ÌƒTƒCƒYiƒrƒbƒg’PˆÊj
-	24H   :  4  : ƒe[ƒv‚ÌˆÊ’uiƒrƒbƒg’PˆÊj
-	28H   :  ?  : ƒe[ƒv‚Ìƒf[ƒ^
+	00H   :  4  : ï¿½ï¿½ï¿½ÊƒCï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½X "TAPE"
+	04H   : 17  : ï¿½eï¿½[ï¿½vï¿½Ì–ï¿½ï¿½O(asciiz)
+	15H   :  5  : ï¿½ï¿½ï¿½Uï¿½[ï¿½u
+	1AH   :  1  : ï¿½ï¿½ï¿½Cï¿½gï¿½vï¿½ï¿½ï¿½eï¿½Nï¿½gï¿½mï¿½bï¿½`(00H=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ‰ÂA10H=ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ‹Ö~ï¿½j
+	1BH   :  1  : ï¿½Lï¿½^ï¿½tï¿½Hï¿½[ï¿½}ï¿½bï¿½gï¿½Ìï¿½ï¿½(01H=ï¿½è‘¬ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½@ï¿½j
+	1CH   :  4  : ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½gï¿½ï¿½(ï¿½gï¿½ï¿½ï¿½Pï¿½Êj
+	20H   :  4  : ï¿½eï¿½[ï¿½vï¿½fï¿½[ï¿½^ï¿½ÌƒTï¿½Cï¿½Yï¿½iï¿½rï¿½bï¿½gï¿½Pï¿½Êj
+	24H   :  4  : ï¿½eï¿½[ï¿½vï¿½ÌˆÊ’uï¿½iï¿½rï¿½bï¿½gï¿½Pï¿½Êj
+	28H   :  ?  : ï¿½eï¿½[ï¿½vï¿½Ìƒfï¿½[ï¿½^
 */
 
 int DATAREC::load_tap_image()
@@ -1235,7 +1235,7 @@ int DATAREC::load_mzt_image()
 		MZT_PUT_BLOCK(ram + offs, size);
 		MZT_PUT_BIT(1, 1);
 #else
-		// format info written in Œ±‚Éo‚éX1
+		// format info written in ï¿½ï¿½ï¿½ï¿½ï¿½Éoï¿½ï¿½X1
 		MZT_PUT_BIT(0, 10000);
 		MZT_PUT_BIT(1, 40);
 		MZT_PUT_BIT(0, 40);

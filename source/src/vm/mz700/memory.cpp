@@ -13,6 +13,7 @@
 #include "../i8255.h"
 
 #if defined(_PAL)
+// need to be revised as the BLNK and /HBLK start at the same clock pulse. 
 #define BLANK_S				147
 #define BLANK_E				0
 #define HBLANK_S			128
@@ -22,12 +23,13 @@
 #define VSYNC_S				245
 #define VSYNC_E				247
 #else
-#define BLANK_S				165 // TODO
-#define BLANK_E				0
-#define HBLANK_S			165
-#define HBLANK_E			0
-#define HSYNC_S				180
-#define HSYNC_E				194
+// http://www.maroon.dti.ne.jp/youkan/mz700/M60719/htiming.html
+#define BLANK_S				160	// 640 / 4 = 160
+#define BLANK_E				0	//   0 / 4 = 0
+#define HBLANK_S			160	// 640 / 4 = 160
+#define HBLANK_E			220	// 881 / 4 = 220.25
+#define HSYNC_S				180	// 720 / 4 = 180
+#define HSYNC_E				196	// 785 / 4 = 196.25
 #define VSYNC_S				221
 #define VSYNC_E				223
 #endif
@@ -207,17 +209,14 @@ void MEMORY::event_vline(int v, int clock)
 {
 	// vblank / vsync
 	set_vblank(v >= 200);
-#if defined(_PAL)
-	vsync = (v >= 245 && v <= 248);
-#else
-	vsync = (v >= 221 && v <= 223);
-#endif
+	vsync = (v >= VSYNC_S && v <= VSYNC_E);
 	
 	// hblank / hsync
 	set_hblank(false);
 	set_blank(false);
 	register_event_by_clock(this, EVENT_HBLANK_S, HBLANK_S	, false, NULL);
 	register_event_by_clock(this, EVENT_BLANK_S	, BLANK_S	, false, NULL);
+	register_event_by_clock(this, EVENT_BLANK_E	, BLANK_E	, false, NULL);
 	register_event_by_clock(this, EVENT_HSYNC_S	, HSYNC_S	, false, NULL);
 	register_event_by_clock(this, EVENT_HSYNC_E	, HSYNC_E	, false, NULL);
 #if defined(_MZ1500)
@@ -243,11 +242,14 @@ void MEMORY::event_callback(int event_id, int err)
 	} else if(event_id == EVENT_BLINK) {
 		// 556 OUT (1.5KHz) -> 8255:PC6
 		d_pio->write_signal(SIG_I8255_PORT_C, (blink = !blink) ? 0xff : 0, 0x40);
-	} else if (event_id == EVENT_HBLANK_S) {
+	} else if(event_id == EVENT_HBLANK_S) {
 		set_hblank(true);
-	} else if (event_id == EVENT_BLANK_S) {
+	} else if(event_id == EVENT_BLANK_S) {
 		set_blank(true);
 		blank_vram = true;
+	} else if(event_id == EVENT_BLANK_E) {
+		set_blank(false);
+		blank_vram = false;
 	} else if(event_id == EVENT_HSYNC_S) {
 		hsync = true;
 	} else if(event_id == EVENT_HSYNC_E) {
@@ -476,10 +478,8 @@ void MEMORY::set_hblank(bool val)
 void MEMORY::set_blank(bool val)
 {
 	if (blank != val) {
-#if defined(_MZ700) && defined(_PAL)
 		// BLANK -> 8253:CLK1 TODO
 		d_pit->write_signal(SIG_I8253_CLOCK_1, val ? 0 : 0xff, 0x20);
-#endif
 		blank = val;
 	}
 }
@@ -681,7 +681,7 @@ bool MEMORY::process_state(FILEIO* state_fio, bool loading)
 #endif
 	state_fio->StateValue(blink);
 	state_fio->StateValue(tempo);
-#if defined(_MZ700) && defined(_PAL)
+#if defined(_MZ700)
 	state_fio->StateValue(blank);
 #endif
 	state_fio->StateValue(hblank);

@@ -19,6 +19,7 @@ class MEMORY : public DEVICE
 {
 private:
 	DEVICE *d_cpu, *d_pit, *d_pio;
+	DEVICE* d_joystick;
 #if defined(USE_ROMDISK)
 	DEVICE* d_romdisk[1];
 #endif

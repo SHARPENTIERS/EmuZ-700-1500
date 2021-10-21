@@ -49,6 +49,7 @@
 #include "psg.h"
 #include "quickdisk.h"
 #endif
+#include "joystick.h"
 
 // ----------------------------------------------------------------------------
 // initialize

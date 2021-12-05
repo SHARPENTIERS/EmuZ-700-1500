@@ -261,6 +261,11 @@ uint32_t EVENT::get_passed_clock_since_vline()
 	return get_passed_clock(vline_start_clock);
 }
 
+uint32_t EVENT::get_passed_clock_since_shifted_vline(int32_t shift)
+{
+	return get_passed_clock(vline_start_clock + shift);
+}
+
 double EVENT::get_passed_usec_since_vline()
 {
 	return get_passed_usec(vline_start_clock);

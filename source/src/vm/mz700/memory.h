@@ -78,6 +78,8 @@ private:
 	uint8_t screen_copy[200][320];
 	scrntype_t palette_pc[8];
 	
+	FILEIO* log = nullptr;
+
 	void draw_line(int v);
 	
 public:

@@ -13,11 +13,10 @@
 #include "../i8255.h"
 
 #if defined(_PAL)
-// need to be revised as the BLNK and /HBLK start at the same clock pulse. 
-#define BLANK_S				147
-#define BLANK_E				0
-#define HBLANK_S			128
-#define HBLANK_E			0
+#define BLANK_S				128	//  640 / 5 = 128
+#define BLANK_E				208	// 1040 / 5 = 208
+#define HBLANK_S			128	//  640 / 5 = 128
+#define HBLANK_E			0	//    0 / 5 = 0
 #define HSYNC_S				160
 #define HSYNC_E				176
 #define VSYNC_S				245
@@ -25,9 +24,9 @@
 #else
 // http://www.maroon.dti.ne.jp/youkan/mz700/M60719/htiming.html
 #define BLANK_S				160	// 640 / 4 = 160
-#define BLANK_E				0	//   0 / 4 = 0
+#define BLANK_E				220	// 881 / 4 = 220.25
 #define HBLANK_S			160	// 640 / 4 = 160
-#define HBLANK_E			220	// 881 / 4 = 220.25
+#define HBLANK_E			0	//   0 / 4 = 0
 #define HSYNC_S				180	// 720 / 4 = 180
 #define HSYNC_E				196	// 785 / 4 = 196.25
 #define VSYNC_S				221
@@ -95,6 +94,10 @@ void MEMORY::initialize()
 	memset(font, 0, sizeof(font));
 	memset(rdmy, 0xff, sizeof(rdmy));
 
+	log = new FILEIO();
+	log->Fopen(create_local_path(_T("BLNK.TXT")), FILEIO_READ_WRITE_NEW_ASCII);
+	log->Fflush();
+
 	// load rom images
 	FILEIO* fio = new FILEIO();
 	if (fio->Fopen(create_local_path(_T(IPLROM_FILE_NAME)), FILEIO_READ_BINARY)) {
@@ -155,6 +158,9 @@ void MEMORY::initialize()
 
 void MEMORY::release()
 {
+	log->Fclose();
+	delete log;
+	log = nullptr;
 }
 
 void MEMORY::reset()
@@ -370,10 +376,12 @@ void MEMORY::write_data8w(uint32_t addr, uint32_t data, int* wait)
 		}
 #endif
 	} else if(mem_bank & MEM_BANK_MON_H && (0xd000 <= addr && addr <= 0xdfff)) {
-		int left = BLANK_S - int(get_passed_clock_since_vline());
-		if (left > 0) {
-			int delta = d_cpu->get_tstates() + 2; // T-states of previous M-cycle + T2
-			*wait = left + delta;
+		int clocks = int(get_passed_clock_since_vline()) + 2 /* T2 */;
+		if (clocks < BLANK_S) {
+			*wait = BLANK_S - clocks + 2 - d_cpu->get_tstates() + 2;
+		}
+		else if (BLANK_E <= clocks) {
+			*wait = (228 + BLANK_S) - clocks + 2 - d_cpu->get_tstates() + 2;
 		}
 	}
 	write_data8(addr, data);
@@ -393,10 +401,12 @@ uint32_t MEMORY::read_data8w(uint32_t addr, int* wait)
 		}
 #endif
 	} else if(mem_bank & MEM_BANK_MON_H && (0xd000 <= addr && addr <= 0xdfff)) {
-		int left = BLANK_S - int(get_passed_clock_since_vline());
-		if(left > 0) {
-			int delta = d_cpu->get_tstates() + 2; // T-states of previous M-cycle + T2
-			*wait = left + delta;
+		int clocks = int(get_passed_clock_since_vline()) + 2 /* T2 */;
+		if (clocks < BLANK_S) {
+			*wait = BLANK_S - clocks + 2 - d_cpu->get_tstates() + 2;
+		}
+		else if (BLANK_E <= clocks) {
+			*wait = (228 + BLANK_S) - clocks + 2 - d_cpu->get_tstates() + 2;
 		}
 	}
 	return read_data8(addr);

@@ -757,6 +757,13 @@ public:
 		}
 		return event_manager->get_passed_clock_since_vline();
 	}
+	virtual uint32_t get_passed_clock_since_shifted_vline(int32_t shift)
+	{
+		if (event_manager == NULL) {
+			event_manager = vm->first_device->next_device;
+		}
+		return event_manager->get_passed_clock_since_shifted_vline(shift);
+	}
 	virtual double get_passed_usec_since_vline()
 	{
 		if(event_manager == NULL) {

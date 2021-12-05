@@ -62,6 +62,7 @@ private:
 	double frames_per_sec, next_frames_per_sec;
 	int lines_per_frame, next_lines_per_frame;
 	uint32_t vline_start_clock;
+	int32_t vline_shift_clock = 0;
 	int cur_vline;
 	
 	void update_event(int clock);
@@ -184,6 +185,7 @@ public:
 	uint32_t get_passed_clock(uint32_t prev);
 	double get_passed_usec(uint32_t prev);
 	uint32_t get_passed_clock_since_vline();
+	uint32_t get_passed_clock_since_shifted_vline(int32_t shift);
 	double get_passed_usec_since_vline();
 	int get_cur_vline()
 	{
